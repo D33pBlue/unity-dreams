@@ -1,4 +1,10 @@
-﻿using System.Collections;
+﻿/*
+d33pblue (c) 2020
+
+Simple Inverse Kinematics class that is used
+to update the legs of a spider.
+*/
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -27,6 +33,7 @@ public class SimpleIK : MonoBehaviour
 		Init();
 	}
 
+    // Initialize the bones
 	void Init(){
 		startRotTarget = target.rotation;
 		bones = new Bone[ChainLength+1];
@@ -48,11 +55,10 @@ public class SimpleIK : MonoBehaviour
 		startRotRoot = bones[0].transf.rotation;
 	}
 
+    // Set the target towards the ground
 	void Update(){
 		RaycastHit hit;
-        // Does the ray intersect any objects excluding the player layer
-        if (Physics.Raycast(target.position+Vector3.up*10,new Vector3(0,-1,0), out hit))
-        {
+        if (Physics.Raycast(target.position+Vector3.up*10,new Vector3(0,-1,0), out hit)){
             target.position = hit.point-Vector3.up*0.5f;
         }
 	}
@@ -61,6 +67,7 @@ public class SimpleIK : MonoBehaviour
     	ResolveIK();
     }
 
+    // Method to apply Inverse Kinematics
     void ResolveIK(){
     	if(target==null){return;}
     	if(bones.Length!=ChainLength){
@@ -78,14 +85,16 @@ public class SimpleIK : MonoBehaviour
     	// IK calculations
     	if((target.position-bones[0].transf.position).sqrMagnitude
     								>= completeLength*completeLength){
+            // The target is unreachable
     		Vector3 dir = (target.position-bones[0].pos).normalized;
     		for(int i=1;i<bones.Length;i++){
     			bones[i].pos = bones[i-1].pos+dir*bones[i-1].length;
     		}
     	}else{
+        // The target is reachable
     		for(int it=0;it<iterations;it++){
 
-    			// backward
+    			// backward phase to set positions
     			for(int i=bones.Length-1;i>0;i--){
     				if(i==bones.Length-1){
     					bones[i].pos = target.position;
@@ -95,7 +104,7 @@ public class SimpleIK : MonoBehaviour
     				}
     			}
 
-    			// forward
+    			// forward phase to set positions
     			for(int i=1;i<bones.Length;i++){
     				bones[i].pos = bones[i-1].pos+
     					(bones[i].pos-bones[i-1].pos).normalized*bones[i-1].length;
@@ -117,7 +126,7 @@ public class SimpleIK : MonoBehaviour
     				}
     			}
 
-    			// check
+    			// check positions and exit iteration
     			if((bones[bones.Length-1].pos-
     					target.position).sqrMagnitude < delta*delta){
     				break;
@@ -127,6 +136,7 @@ public class SimpleIK : MonoBehaviour
 
     	}
 
+        // set rotations and apply tranform
     	for(int i=0;i<bones.Length;i++){
     		if(i==bones.Length-1){
     			bones[i].transf.rotation = target.rotation *
@@ -140,6 +150,7 @@ public class SimpleIK : MonoBehaviour
 
     }
 
+    // Draw the bones
     void OnDrawGizmos(){
     	var cur = this.transform;
     	for(int i=0;i<ChainLength&&cur!=null&&cur.parent!=null;i++){
@@ -158,6 +169,7 @@ public class SimpleIK : MonoBehaviour
     }
 }
 
+// bones data structure
 public struct Bone{
 	public float length;
 	public Transform transf;
