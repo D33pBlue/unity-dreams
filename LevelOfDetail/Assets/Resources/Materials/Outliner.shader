@@ -33,7 +33,7 @@ v2f vert(appdata v) {
 	float2 offset = TransformViewToProjection(norm.xy);
  
 	o.pos.xy += offset * o.pos.z * _Outline;
-	o.color = _OutlineColor;
+	o.color = float4(0.0,0.0,0.0,1.0);
 	return o;
 }
 ENDCG
